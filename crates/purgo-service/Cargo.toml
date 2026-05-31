@@ -33,8 +33,8 @@ tower = { version = "0.5", features = ["util"] }
 http-body-util = "0.1"
 # Build real PDF and OOXML fixtures for the e2e HTTP tests (POST a .pdf / .docx
 # through /disarm). Same trimmed feature surface the adapters parse with.
-lopdf = { version = "0.36", default-features = false }
-zip = { version = "2", default-features = false, features = ["deflate"] }
+lopdf = { version = "0.40", default-features = false }
+zip = { version = "8", default-features = false, features = ["deflate"] }
 
 [lints]
 workspace = true
