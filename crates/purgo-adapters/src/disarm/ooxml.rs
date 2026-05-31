@@ -5,7 +5,7 @@ use purgo_domain::{
     Artifact, DisarmOutput, Disarmer, DomainError, FileFormat, Policy, RemovedItem, ThreatClass,
 };
 use quick_xml::events::Event;
-use quick_xml::{Reader, Writer};
+use quick_xml::{Reader, Writer, XmlVersion};
 use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -239,7 +239,7 @@ fn classify_relationship(
         let attr = attr.map_err(|e| malformed(format!("malformed relationship attribute: {e}")))?;
         let key = attr.key.local_name();
         let value = attr
-            .unescape_value()
+            .normalized_value(XmlVersion::Implicit1_0)
             .map_err(|e| malformed(format!("malformed relationship attribute value: {e}")))?;
         match key.as_ref() {
             b"TargetMode" => target_mode_external = value.eq_ignore_ascii_case("external"),

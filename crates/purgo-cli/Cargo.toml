@@ -18,8 +18,8 @@ purgo-adapters = { path = "../purgo-adapters" }
 
 [dev-dependencies]
 # Used by the e2e tests to build valid fixtures for the `purgo` binary.
-lopdf = { version = "0.36", default-features = false }
-zip = { version = "2", default-features = false, features = ["deflate"] }
+lopdf = { version = "0.40", default-features = false }
+zip = { version = "8", default-features = false, features = ["deflate"] }
 # Used by the e2e test to generate a seed key and verify the `.sig` the binary
 # emits — exercising the signing path end to end with an independent verifier.
 ed25519-dalek = { version = "2", default-features = false }
