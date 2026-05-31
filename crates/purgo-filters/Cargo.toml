@@ -1,0 +1,13 @@
+[package]
+name = "purgo-filters"
+description = "Pure, I/O-free disarming logic shared verbatim between the in-process adapters and the WASM sandbox guest (no_std, no unsafe, never panics on hostile input)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

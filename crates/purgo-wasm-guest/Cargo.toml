@@ -1,0 +1,41 @@
+[package]
+name = "purgo-wasm-guest"
+description = "WebAssembly guest that runs purgo's pure disarming logic inside the host's sandbox (no WASI, no host functions, no I/O)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+# A cdylib so the toolchain emits a self-contained `.wasm` module exporting the
+# host/guest ABI. It also links cleanly for the host target (producing an unused
+# shared object), which lets it stay a normal workspace member: `cargo test
+# --workspace` builds it for the host without trying to run a wasm binary.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# The single, shared implementation of the dangerous parsing. The guest adds
+# only the thin linear-memory ABI on top — no duplicated format logic.
+purgo-filters = { path = "../purgo-filters" }
+
+# This crate cannot inherit the workspace's `unsafe_code = "forbid"`: exporting
+# the linear-memory ABI to the host requires the `#[no_mangle]` attribute (see
+# the `extern "C"` exports in lib.rs), which on this workspace's 2021 edition is
+# flagged by the `unsafe_code` lint even though it only *names* a symbol for the
+# linker. (The block form `#[unsafe(no_mangle)]` that would sidestep the lint is
+# 2024-edition syntax and does not apply on edition 2021.)
+#
+# Rather than relaxing the lint crate-wide, we keep it at `deny` here and place a
+# narrow `#[allow(unsafe_code)]` on each of the three FFI export functions in
+# lib.rs — and nowhere else. A stray `unsafe { … }` block (or any new unsafe
+# operation outside those exports) is therefore still rejected at compile time,
+# exactly like the rest of the workspace. The crate contains **no `unsafe { … }`
+# blocks and no unsafe operations**: all buffer ownership is kept safely in a
+# registry (see lib.rs). All clippy lints stay as strict as the rest of the
+# workspace.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+all = "warn"

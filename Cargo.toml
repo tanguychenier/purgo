@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/purgo-domain",
+    "crates/purgo-application",
+    "crates/purgo-adapters",
+    "crates/purgo-cli",
+    "crates/purgo-service",
+    "crates/purgo-filters",
+    "crates/purgo-wasm-guest",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+license = "EUPL-1.2"
+authors = ["Tanguy Chénier <tanguychenier@gmail.com>"]
+
+# Workspace-wide lints. Forbidding unsafe is a deliberate security stance:
+# a CDR engine parses hostile input, exactly where memory-unsafety becomes RCE.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"

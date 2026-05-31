@@ -1,0 +1,7 @@
+# Build artifacts must never enter the build context: they bloat the context,
+# may carry host-specific paths, and are always rebuilt inside the container
+# against the named cache volumes.
+target
+fuzz/target
+**/*.rs.bk
+.git

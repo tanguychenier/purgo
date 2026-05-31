@@ -1,0 +1,61 @@
+[package]
+name = "purgo-adapters"
+description = "Outbound adapters for purgo: format detection and per-format disarmers (std-only, no unsafe)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+purgo-domain = { path = "../purgo-domain" }
+# Pure, I/O-free disarming logic, shared verbatim with the WASM sandbox guest so
+# the dangerous parsing code has a single audited implementation.
+purgo-filters = { path = "../purgo-filters" }
+# PDF parsing/serialisation. Default features (chrono/jiff/rayon/time) are
+# disabled: purgo only needs structural load/save, not date handling or
+# parallel parsing, keeping the dependency surface (and attack surface) small.
+lopdf = { version = "0.36", default-features = false }
+# OOXML container handling. `zip` reads and rebuilds the ZIP envelope; default
+# features are dropped to a stored/deflate-only surface — purgo never needs the
+# heavier codecs (bzip2/zstd/lzma/aes) and they only widen the attack surface.
+zip = { version = "2", default-features = false, features = ["deflate"] }
+# `quick-xml` parses the `.rels` relationship parts so external/OLE/macro
+# relationships can be dropped while the rest of the XML is rebuilt verbatim.
+quick-xml = "0.36"
+# Pure-Rust Ed25519 signing for the output-signing adapter. `rand_core` (with
+# `getrandom`) is the only extra surface, used solely to generate ephemeral
+# test keys — production keys are loaded from a 32-byte seed file.
+ed25519-dalek = { version = "2", default-features = false, features = ["rand_core"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+# WebAssembly host for the sandbox adapter. Optional and behind the `sandbox`
+# feature: `wasmtime` needs a newer compiler than the pure-std crates' MSRV, so
+# the default adapter surface (and its low MSRV) is unaffected unless a
+# composition root opts into running disarmers in the sandbox.
+#
+# Default features are dropped to the smallest engine that can run our guest:
+# the Cranelift compiler plus its runtime. We deliberately do NOT enable
+# `wasi-common`/`wasi` — the guest gets no WASI, hence no FS/network/clock.
+wasmtime = { version = "27", default-features = false, features = [
+    "cranelift",
+    "runtime",
+    "gc-drc",
+], optional = true }
+
+[features]
+# Off by default so the common build stays light and low-MSRV. Turn on to wire
+# the wasmtime-backed `Sandbox` adapter.
+sandbox = ["dep:wasmtime"]
+
+[dev-dependencies]
+# The integration test wires the sandbox into the real use-case pipeline
+# (composition-root style), so it needs the application service.
+purgo-application = { path = "../purgo-application" }
+# Assemble tiny purpose-built guest modules (in the WebAssembly text format) for
+# the sandbox resource-bound tests — e.g. a guest whose `disarm` loops forever,
+# to prove the fuel budget traps it. Pure-Rust and tiny, so it does not weigh on
+# the default build.
+wat = "1"
+
+[lints]
+workspace = true

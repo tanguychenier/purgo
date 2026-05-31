@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Run the exact same gates as the local porte verte, inside the exact same
+# build image, so CI and developer machines never diverge.
+jobs:
+  green-gate:
+    name: fmt-check + clippy + test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dev image
+        run: docker build -t purgo-dev:latest .
+
+      - name: Format check
+        run: ./x cargo fmt --all -- --check
+
+      - name: Clippy (deny warnings)
+        run: ./x cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test workspace
+        run: ./x cargo test --workspace
+
+  sandbox:
+    name: WASM sandbox round-trip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dev image
+        run: docker build -t purgo-dev:latest .
+
+      # The default workspace test run does not build the `sandbox` feature
+      # (it pulls in wasmtime), so the proof that disarming really travels
+      # through the WASM guest — with no imports, same result as in-process —
+      # would otherwise never run in CI. The wasm32 target lives in the image
+      # and the test rebuilds the guest itself.
+      - name: Test sandbox feature
+        run: ./x cargo test -p purgo-adapters --features sandbox
+
+  fuzz-corpus:
+    name: Replay fuzz corpus (anti-panic invariant)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dev image
+        run: docker build -t purgo-dev:latest .
+
+      # Deterministically replay the committed seed corpus (no new discovery)
+      # so the "parser never panics on hostile input" invariant is guarded on
+      # every push, not just during ad-hoc fuzzing campaigns.
+      - name: Replay corpus
+        run: make fuzz-corpus

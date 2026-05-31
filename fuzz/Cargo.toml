@@ -1,0 +1,55 @@
+# Fuzzing harness for purgo's attacker-facing parsers.
+#
+# This crate is deliberately a *separate* workspace (note the empty `[workspace]`
+# table below): cargo-fuzz isolates it so that the libfuzzer-instrumented build
+# never leaks into `cargo test --workspace`, and the nightly-only `-Z` flags it
+# relies on never touch the stable build of the rest of the project.
+#
+# Each target drives one real disarmer adapter on arbitrary bytes and asserts the
+# single invariant that matters for a security tool parsing hostile input: the
+# parser never panics. Any outcome other than a clean return — `Ok(_)` or
+# `Err(DomainError::MalformedInput { .. })` — is a bug to be fixed in the parser.
+[package]
+name = "purgo-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+purgo-domain = { path = "../crates/purgo-domain" }
+purgo-adapters = { path = "../crates/purgo-adapters" }
+
+[[bin]]
+name = "jpeg"
+path = "fuzz_targets/jpeg.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "png"
+path = "fuzz_targets/png.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pdf"
+path = "fuzz_targets/pdf.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ooxml"
+path = "fuzz_targets/ooxml.rs"
+test = false
+doc = false
+bench = false
+
+# A separate workspace: keep this crate out of the main one entirely.
+[workspace]

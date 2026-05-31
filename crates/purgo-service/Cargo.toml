@@ -1,0 +1,40 @@
+[package]
+name = "purgo-service"
+description = "HTTP driving adapter and composition root for purgo: exposes the DisarmFile use case over axum."
+version.workspace = true
+edition.workspace = true
+# axum 0.7 / tokio 1 need a newer compiler than the rest of the workspace; this
+# adapter therefore pins its own, higher MSRV without raising the bar for the
+# pure-std domain and application crates.
+rust-version = "1.75"
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "purgo-serve"
+path = "src/bin/purgo-serve.rs"
+
+[dependencies]
+purgo-domain = { path = "../purgo-domain" }
+purgo-application = { path = "../purgo-application" }
+purgo-adapters = { path = "../purgo-adapters" }
+# The inbound HTTP adapter. `axum` provides the router and extractors; `tokio`
+# is the async runtime that drives them. Default features are kept: the service
+# is a network-facing binary, not a leaf library, so the convenience of the
+# full surface outweighs trimming it here.
+axum = "0.7"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal"] }
+
+[dev-dependencies]
+# `tower` gives us `ServiceExt::oneshot`, which drives the Router in-process so
+# integration tests never open a real socket.
+tower = { version = "0.5", features = ["util"] }
+# `http-body-util` collects the streamed response body into bytes for asserting.
+http-body-util = "0.1"
+# Build real PDF and OOXML fixtures for the e2e HTTP tests (POST a .pdf / .docx
+# through /disarm). Same trimmed feature surface the adapters parse with.
+lopdf = { version = "0.36", default-features = false }
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+[lints]
+workspace = true
