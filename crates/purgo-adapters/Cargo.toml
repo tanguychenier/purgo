@@ -36,7 +36,7 @@ rand_core = { version = "0.6", features = ["getrandom"] }
 # Default features are dropped to the smallest engine that can run our guest:
 # the Cranelift compiler plus its runtime. We deliberately do NOT enable
 # `wasi-common`/`wasi` — the guest gets no WASI, hence no FS/network/clock.
-wasmtime = { version = "27", default-features = false, features = [
+wasmtime = { version = "45", default-features = false, features = [
     "cranelift",
     "runtime",
     "gc-drc",
