@@ -15,7 +15,7 @@ purgo-filters = { path = "../purgo-filters" }
 # PDF parsing/serialisation. Default features (chrono/jiff/rayon/time) are
 # disabled: purgo only needs structural load/save, not date handling or
 # parallel parsing, keeping the dependency surface (and attack surface) small.
-lopdf = { version = "0.40", default-features = false }
+lopdf = { version = "0.41", default-features = false }
 # OOXML container handling. `zip` reads and rebuilds the ZIP envelope; default
 # features are dropped to a stored/deflate-only surface — purgo never needs the
 # heavier codecs (bzip2/zstd/lzma/aes) and they only widen the attack surface.
