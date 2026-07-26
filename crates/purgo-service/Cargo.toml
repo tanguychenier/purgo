@@ -22,7 +22,7 @@ purgo-adapters = { path = "../purgo-adapters" }
 # is the async runtime that drives them. Default features are kept: the service
 # is a network-facing binary, not a leaf library, so the convenience of the
 # full surface outweighs trimming it here.
-axum = "0.7"
+axum = "0.8"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal"] }
 
 [dev-dependencies]
@@ -33,7 +33,7 @@ tower = { version = "0.5", features = ["util"] }
 http-body-util = "0.1"
 # Build real PDF and OOXML fixtures for the e2e HTTP tests (POST a .pdf / .docx
 # through /disarm). Same trimmed feature surface the adapters parse with.
-lopdf = { version = "0.40", default-features = false }
+lopdf = { version = "0.44", default-features = false }
 zip = { version = "8", default-features = false, features = ["deflate"] }
 
 [lints]
